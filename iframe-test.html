@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iframe测试 - 生命之轮</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .iframe-container {
+            padding: 20px;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>生命之轮 - iframe测试</h1>
+            <p>如果你能看到这个页面，说明GitHub Pages工作正常</p>
+        </div>
+        
+        <div class="iframe-container">
+            <iframe src="https://wongshammah.github.io/life-wheel/" title="生命之轮"></iframe>
+        </div>
+        
+        <div class="instructions">
+            <h3>在Notion中使用iframe的代码：</h3>
+            <pre><code>&lt;iframe 
+  src="https://wongshammah.github.io/life-wheel/" 
+  width="100%" 
+  height="600px" 
+  frameborder="0"
+  allowfullscreen
+  style="border: none; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"&gt;
+&lt;/iframe&gt;</code></pre>
+        </div>
+    </div>
+</body>
+</html> 
