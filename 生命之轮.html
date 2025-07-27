@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生命之轮 - 动态评估工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .wheel-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .controls h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .control-value {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e9ecef;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .summary {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .summary h3 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>生命之轮</h1>
+            <p>评估你当前的生命状态，发现需要改进的领域</p>
+        </div>
+        
+        <div class="content">
+            <div class="wheel-container">
+                <canvas id="wheelCanvas" width="500" height="500"></canvas>
+            </div>
+            
+            <div class="controls">
+                <h2>调整各维度评分</h2>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>家人和朋友</span>
+                        <span class="control-value" id="family-value">5</span>
+                    </div>
+                    <input type="range" class="slider" id="family" min="1" max="10" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>个人成长与发展</span>
+                        <span class="control-value" id="growth-value">5</span>
+                    </div>
+                    <input type="range" class="slider" id="growth" min="1" max="10" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>精神</span>
+                        <span class="control-value" id="spirit-value">5</span>
+                    </div>
+                    <input type="range" class="slider" id="spirit" min="1" max="10" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>财务</span>
+                        <span class="control-value" id="finance-value">5</span>
+                    </div>
+                    <input type="range" class="slider" id="finance" min="1" max="10" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>职业或事业</span>
+                        <span class="control-value" id="career-value">5</span>
+                    </div>
+                    <input type="range" class="slider" id="career" min="1" max="10" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>爱情</span>
+                        <span class="control-value" id="love-value">5</span>
+                    </div>
+                    <input type="range" class="slider" id="love" min="1" max="10" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>娱乐休闲</span>
+                        <span class="control-value" id="recreation-value">5</span>
+                    </div>
+                    <input type="range" class="slider" id="recreation" min="1" max="10" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>贡献或给予</span>
+                        <span class="control-value" id="contribution-value">5</span>
+                    </div>
+                    <input type="range" class="slider" id="contribution" min="1" max="10" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>健康或身材</span>
+                        <span class="control-value" id="health-value">5</span>
+                    </div>
+                    <input type="range" class="slider" id="health" min="1" max="10" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>居住或工作环境</span>
+                        <span class="control-value" id="environment-value">5</span>
+                    </div>
+                    <input type="range" class="slider" id="environment" min="1" max="10" value="5">
+                </div>
+            </div>
+        </div>
+        
+        <div class="summary">
+            <h3>生命之轮分析</h3>
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="average-score">5.0</div>
+                    <div class="stat-label">平均评分</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="highest-area">-</div>
+                    <div class="stat-label">最强领域</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="lowest-area">-</div>
+                    <div class="stat-label">需要改进</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="balance-score">0%</div>
+                    <div class="stat-label">平衡度</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class LifeWheel {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.centerX = canvas.width / 2;
+                this.centerY = canvas.height / 2;
+                this.radius = 200;
+                
+                this.categories = [
+                    { name: '家人和朋友', angle: 0 },
+                    { name: '个人成长与发展', angle: 36 },
+                    { name: '精神', angle: 72 },
+                    { name: '财务', angle: 108 },
+                    { name: '职业或事业', angle: 144 },
+                    { name: '爱情', angle: 180 },
+                    { name: '娱乐休闲', angle: 216 },
+                    { name: '贡献或给予', angle: 252 },
+                    { name: '健康或身材', angle: 288 },
+                    { name: '居住或工作环境', angle: 324 }
+                ];
+                
+                this.scores = {
+                    'family': 5,
+                    'growth': 5,
+                    'spirit': 5,
+                    'finance': 5,
+                    'career': 5,
+                    'love': 5,
+                    'recreation': 5,
+                    'contribution': 5,
+                    'health': 5,
+                    'environment': 5
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.draw();
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                const sliders = document.querySelectorAll('.slider');
+                sliders.forEach(slider => {
+                    slider.addEventListener('input', (e) => {
+                        const id = e.target.id;
+                        const value = parseInt(e.target.value);
+                        this.scores[id] = value;
+                        
+                        // 更新显示的值
+                        document.getElementById(`${id}-value`).textContent = value;
+                        
+                        // 重新绘制图表
+                        this.draw();
+                        this.updateSummary();
+                    });
+                });
+            }
+            
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // 绘制背景网格
+                this.drawGrid();
+                
+                // 绘制生命之轮
+                this.drawWheel();
+                
+                // 绘制标签
+                this.drawLabels();
+            }
+            
+            drawGrid() {
+                this.ctx.strokeStyle = '#e9ecef';
+                this.ctx.lineWidth = 1;
+                
+                // 绘制同心圆
+                for (let i = 1; i <= 10; i++) {
+                    const radius = (this.radius / 10) * i;
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.centerX, this.centerY, radius, 0, 2 * Math.PI);
+                    this.ctx.stroke();
+                }
+                
+                // 绘制径向线
+                this.ctx.strokeStyle = '#e9ecef';
+                for (let i = 0; i < 10; i++) {
+                    const angle = (i * 36) * Math.PI / 180;
+                    const x = this.centerX + Math.cos(angle) * this.radius;
+                    const y = this.centerY + Math.sin(angle) * this.radius;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.centerX, this.centerY);
+                    this.ctx.lineTo(x, y);
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawWheel() {
+                const scoreKeys = ['family', 'growth', 'spirit', 'finance', 'career', 
+                                 'love', 'recreation', 'contribution', 'health', 'environment'];
+                
+                this.ctx.fillStyle = 'rgba(102, 126, 234, 0.3)';
+                this.ctx.strokeStyle = '#667eea';
+                this.ctx.lineWidth = 2;
+                
+                this.ctx.beginPath();
+                
+                for (let i = 0; i < scoreKeys.length; i++) {
+                    const score = this.scores[scoreKeys[i]];
+                    const angle = (i * 36) * Math.PI / 180;
+                    const radius = (this.radius / 10) * score;
+                    const x = this.centerX + Math.cos(angle) * radius;
+                    const y = this.centerY + Math.sin(angle) * radius;
+                    
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.stroke();
+                
+                // 绘制数据点
+                this.ctx.fillStyle = '#667eea';
+                for (let i = 0; i < scoreKeys.length; i++) {
+                    const score = this.scores[scoreKeys[i]];
+                    const angle = (i * 36) * Math.PI / 180;
+                    const radius = (this.radius / 10) * score;
+                    const x = this.centerX + Math.cos(angle) * radius;
+                    const y = this.centerY + Math.sin(angle) * radius;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                    this.ctx.fill();
+                }
+            }
+            
+            drawLabels() {
+                this.ctx.fillStyle = '#333';
+                this.ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+                this.ctx.textAlign = 'center';
+                
+                for (let i = 0; i < this.categories.length; i++) {
+                    const angle = (i * 36) * Math.PI / 180;
+                    const radius = this.radius + 30;
+                    const x = this.centerX + Math.cos(angle) * radius;
+                    const y = this.centerY + Math.sin(angle) * radius;
+                    
+                    // 调整文本位置
+                    let textX = x;
+                    let textY = y;
+                    
+                    if (i === 0) { // 家人和朋友
+                        textY += 5;
+                    } else if (i === 1) { // 个人成长与发展
+                        textX += 5;
+                    } else if (i === 2) { // 精神
+                        textX += 5;
+                    } else if (i === 3) { // 财务
+                        textX += 5;
+                    } else if (i === 4) { // 职业或事业
+                        textX += 5;
+                    } else if (i === 5) { // 爱情
+                        textY += 5;
+                    } else if (i === 6) { // 娱乐休闲
+                        textX -= 5;
+                    } else if (i === 7) { // 贡献或给予
+                        textX -= 5;
+                    } else if (i === 8) { // 健康或身材
+                        textX -= 5;
+                    } else if (i === 9) { // 居住或工作环境
+                        textX -= 5;
+                    }
+                    
+                    this.ctx.fillText(this.categories[i].name, textX, textY);
+                }
+            }
+            
+            updateSummary() {
+                const scores = Object.values(this.scores);
+                const average = scores.reduce((a, b) => a + b, 0) / scores.length;
+                
+                const maxScore = Math.max(...scores);
+                const minScore = Math.min(...scores);
+                const maxIndex = scores.indexOf(maxScore);
+                const minIndex = scores.indexOf(minScore);
+                
+                const categoryNames = ['家人和朋友', '个人成长与发展', '精神', '财务', '职业或事业', 
+                                     '爱情', '娱乐休闲', '贡献或给予', '健康或身材', '居住或工作环境'];
+                
+                // 计算平衡度（标准差越小，平衡度越高）
+                const variance = scores.reduce((acc, score) => acc + Math.pow(score - average, 2), 0) / scores.length;
+                const stdDev = Math.sqrt(variance);
+                const balanceScore = Math.max(0, 100 - (stdDev * 10));
+                
+                document.getElementById('average-score').textContent = average.toFixed(1);
+                document.getElementById('highest-area').textContent = categoryNames[maxIndex];
+                document.getElementById('lowest-area').textContent = categoryNames[minIndex];
+                document.getElementById('balance-score').textContent = Math.round(balanceScore) + '%';
+            }
+        }
+        
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('wheelCanvas');
+            const lifeWheel = new LifeWheel(canvas);
+            lifeWheel.updateSummary();
+        });
+    </script>
+</body>
+</html> 
